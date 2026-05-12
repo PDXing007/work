@@ -3,7 +3,10 @@ name: Build Android APK
 on:
   push:
     branches: [main, master]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
