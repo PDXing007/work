@@ -31,17 +31,25 @@ jobs:
       - name: Build APK
         working-directory: ssq_predictor
         run: |
-          buildozer android release 2>&1 | while read line; do
-            case "$line" in
-              *STEP*|*Download*|*Compile*|*Package*|*BUILD*|*ERROR*|*APK*|*Signed*)
-                echo "$line"
-                ;;
-            esac
-          done
+          echo "=== buildozer.spec check ==="
+          grep -E "title|version|requirements|android.arch|p4a.release" buildozer.spec || true
+          echo "=== Keystore check ==="
+          ls -la ssq-release.keystore || echo "KEYSTORE MISSING!"
+          echo "=== Data file check ==="
+          ls -la ../ssq_全历史.json || echo "DATA FILE MISSING!"
+          echo "=== Buildozer build ==="
+          buildozer android release 2>&1
+          echo "=== Build exit code: $? ==="
+          echo "=== Bin directory ==="
+          ls -la bin/ 2>/dev/null || echo "bin/ not found"
+          find . -name "*.apk" 2>/dev/null || echo "No APK found anywhere"
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: SSQ-Predictor-APK
-          path: ssq_predictor/bin/*.apk
+          name: SSQ-Predictor-Build-Output
+          path: |
+            ssq_predictor/bin/*.apk
+            ssq_predictor/.buildozer/android/platform/*.log
           retention-days: 30
