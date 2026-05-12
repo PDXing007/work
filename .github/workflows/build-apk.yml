@@ -1,0 +1,44 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pip python3-dev git zip unzip openjdk-17-jdk autoconf libtool libffi-dev libssl-dev
+
+      - name: Install buildozer
+        run: pip install buildozer cython
+
+      - name: Build APK
+        working-directory: ssq_predictor
+        run: |
+          buildozer android release 2>&1 | while read line; do
+            case "$line" in
+              *STEP*|*Download*|*Compile*|*Package*|*BUILD*|*ERROR*|*APK*|*Signed*)
+                echo "$line"
+                ;;
+            esac
+          done
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SSQ-Predictor-APK
+          path: ssq_predictor/bin/*.apk
+          retention-days: 30
