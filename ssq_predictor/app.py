@@ -389,7 +389,9 @@ class PredictScreen(Screen):
                 self._ui("MCMC采样…",30); result=pred.predict(top_n=10,n_mc_samples=3000)
                 self._ui("完成",95)
                 Clock.schedule_once(lambda dt:self._show(result,pred),0)
-            except Exception as e: Clock.schedule_once(lambda dt:self._err(str(e)),0)
+            except Exception as _e:
+                _emsg=str(_e)
+                Clock.schedule_once(lambda dt:self._err(_emsg),0)
             self._busy=False
         threading.Thread(target=run,daemon=True).start()
 
