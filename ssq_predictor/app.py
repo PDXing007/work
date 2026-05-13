@@ -9,6 +9,36 @@ import os, sys, json, math, threading
 from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# ═══════════ FONT — MUST register before importing kivy.app.App ═══════════
+from kivy.resources import resource_add_path
+from kivy.core.text import LabelBase
+
+# Tell Kivy where to search for font files
+_base = os.path.dirname(os.path.abspath(__file__))
+resource_add_path(_base)
+resource_add_path(os.path.join(_base, "fonts"))
+resource_add_path(os.getcwd())
+
+# Override Roboto (Kivy's default) with a CJK-capable font
+_font_ok = False
+for _fp in [
+    "C:/Windows/Fonts/msyh.ttc",                     # Windows dev
+    "/system/fonts/DroidSansChinese.ttf",             # Huawei EMUI
+    "/system/fonts/HwChinese-Medium.ttf",             # Huawei EMUI v2
+    "/system/fonts/DroidSansFallback.ttf",            # AOSP / Samsung
+    "/system/fonts/NotoSansSC-Regular.otf",           # Android 7+
+    "/system/fonts/NotoSansCJK-Regular.ttc",          # Custom ROMs
+    "/system/fonts/MiLanProVF.ttf",                   # MIUI (Xiaomi/Redmi)
+    "DroidSansFallback.ttf",                          # bundled in APK
+]:
+    try:
+        LabelBase.register("Roboto", _fp)  # Register BEFORE App import!
+        _font_ok = True
+        break
+    except Exception:
+        pass
+
+# ═══════════ NOW import the rest of Kivy ═══════════
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
@@ -21,36 +51,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy.core.window import Window
-from kivy.core.text import LabelBase
 from kivy.metrics import dp, sp
-from kivy.graphics import Color, Rectangle, RoundedRectangle, Ellipse, Line
+from kivy.graphics import Color, Rectangle, RoundedRectangle, Ellipse
 from kivy.utils import get_color_from_hex
-
-# ---- Font ----
-# Try to load a CJK font WITHOUT breaking the default Roboto
-_cjk_registered = False
-for _fp in [
-    "C:/Windows/Fonts/msyh.ttc",                  # Windows dev
-    "/system/fonts/DroidSansChinese.ttf",          # Huawei EMUI
-    "/system/fonts/HwChinese-Medium.ttf",          # Huawei EMUI v2
-    "/system/fonts/DroidSansFallback.ttf",         # AOSP / Samsung
-    "/system/fonts/NotoSansSC-Regular.otf",        # Android 7+
-    "/system/fonts/NotoSansCJK-Regular.ttc",       # Custom ROMs
-    "/system/fonts/MiLanProVF.ttf",                # MIUI (Xiaomi/Redmi)
-    "DroidSansFallback.ttf",                       # bundled in APK
-]:
-    try:
-        LabelBase.register("CJK", _fp)
-        _cjk_registered = True
-        break
-    except Exception:
-        pass
-# Only swap Roboto if CJK font was successfully loaded
-if _cjk_registered:
-    try:
-        LabelBase._fonts["Roboto"] = LabelBase._fonts["CJK"]
-    except Exception:
-        pass
 
 # ---- Colors ----
 BG   = get_color_from_hex("#0A0E14")

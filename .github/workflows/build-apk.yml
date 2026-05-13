@@ -96,14 +96,17 @@ jobs:
           # Ensure data file is in the app directory for APK bundling
           cp ../ssq_全历史.json ./ssq_全历史.json 2>/dev/null || true
           echo "Data file: $(ls -la ssq_全历史.json 2>/dev/null || echo 'NOT FOUND')"
-          # Download Chinese font for Android (bundled in APK)
-          echo "Downloading Chinese font..."
+          # Download Chinese font — place in fonts/ dir for resource_add_path
+          echo "Downloading CJK font..."
+          mkdir -p fonts
           for url in \
             "https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/master/data/fonts/DroidSansFallback.ttf" \
             "https://github.com/aosp-mirror/platform_frameworks_base/raw/master/data/fonts/DroidSansFallback.ttf"; do
-            curl -sL -o DroidSansFallback.ttf "$url" 2>&1 && break
+            curl -sL -o fonts/DroidSansFallback.ttf "$url" 2>&1 && break
           done
-          ls -la DroidSansFallback.ttf 2>/dev/null && echo "Font OK" || echo "Font download failed"
+          # Also copy to root as fallback
+          cp fonts/DroidSansFallback.ttf ./DroidSansFallback.ttf 2>/dev/null || true
+          ls -la fonts/DroidSansFallback.ttf 2>/dev/null && echo "Font OK" || echo "Font download failed"
           echo "=== Buildozer debug build ==="
           buildozer android debug 2>&1
           echo "=== Build exit: $? ==="
