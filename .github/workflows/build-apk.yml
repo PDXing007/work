@@ -93,43 +93,30 @@ jobs:
       - name: Build APK
         working-directory: ssq_predictor
         run: |
-          echo "=== Keystore check ==="
-          ls -la ssq-release.jks || echo "KEYSTORE MISSING!"
-          echo "=== Buildozer release build ==="
-          buildozer android release 2>&1
+          echo "=== Buildozer debug build ==="
+          buildozer android debug 2>&1
           echo "=== Build exit: $? ==="
-          echo "=== bin/ ==="
           ls -laR bin/ 2>/dev/null || echo "bin/ empty"
-          echo "=== APK/AAB search ==="
-          find . -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "None found"
 
-      - name: Convert AAB to APK
+      - name: Sign APK
         if: always()
         working-directory: ssq_predictor
         run: |
-          AAB=$(find . -name "*.aab" 2>/dev/null | head -1)
-          if [ -n "$AAB" ]; then
-            echo "Found AAB: $AAB"
-            # Download bundletool
-            curl -sL -o /tmp/bundletool.jar https://github.com/google/bundletool/releases/download/1.18.0/bundletool-all-1.18.0.jar
-            # Generate keystore for bundletool (it needs pkcs12)
-            keytool -importkeystore -srckeystore ssq-release.jks -destkeystore /tmp/ssq.p12 -deststoretype PKCS12 \
-              -srcstorepass ssq2026predictor -deststorepass ssq2026predictor \
-              -srckeypass ssq2026predictor -destkeypass ssq2026predictor -noprompt 2>/dev/null
-            # Convert AAB to universal APK
-            java -jar /tmp/bundletool.jar build-apks \
-              --bundle="$AAB" \
-              --output=/tmp/output.apks \
-              --mode=universal \
-              --ks=/tmp/ssq.p12 \
-              --ks-pass=pass:ssq2026predictor \
-              --ks-key-alias=ssqkey \
-              --key-pass=pass:ssq2026predictor
-            # Extract APK from .apks (which is actually a zip)
-            unzip -o /tmp/output.apks -d /tmp/apk_out
-            cp /tmp/apk_out/universal.apk bin/ 2>/dev/null || cp /tmp/apk_out/*.apk bin/ 2>/dev/null
-            echo "APK converted!"
-            ls -la bin/
+          DEBUG_APK=$(find bin -name "*.apk" 2>/dev/null | head -1)
+          if [ -n "$DEBUG_APK" ]; then
+            SDK=$HOME/.buildozer/android/platform/android-sdk
+            APKSIGNER=$(find $SDK/build-tools -name apksigner -type f 2>/dev/null | sort -r | head -1)
+            echo "Signing $DEBUG_APK with $APKSIGNER"
+            $APKSIGNER sign --ks ssq-release.jks \
+              --ks-pass pass:ssq2026predictor \
+              --ks-key-alias ssqkey \
+              --key-pass pass:ssq2026predictor \
+              --out bin/SSQPredictor-release.apk \
+              "$DEBUG_APK"
+            echo "Signed:"
+            ls -la bin/SSQPredictor-release.apk
+          else
+            echo "No APK found"
           fi
 
       - name: Upload APK
