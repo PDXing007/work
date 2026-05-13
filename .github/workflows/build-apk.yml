@@ -27,7 +27,14 @@ jobs:
           sudo apt-get install -y -qq python3-pip python3-dev git zip unzip openjdk-17-jdk autoconf libtool libffi-dev libssl-dev
 
       - name: Install buildozer
-        run: pip install buildozer cython
+        run: |
+          pip install buildozer cython
+          # Patch buildozer bug: meta.split('=') can fail on malformed metadata
+          BUILDOZER_FILE=$(python -c "import buildozer.targets.android; print(buildozer.targets.android.__file__)" 2>/dev/null)
+          if [ -f "$BUILDOZER_FILE" ]; then
+            sed -i 's/key, value = meta.split(.=.=. 1.)/if "=" in meta: key, value = meta.split("=", 1)/' "$BUILDOZER_FILE"
+            echo "Patched buildozer android.py"
+          fi
 
       - name: Setup Android SDK (manual)
         run: |
