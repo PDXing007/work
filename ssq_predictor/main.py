@@ -150,4 +150,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # On Android/Kivy, launch the GUI app instead of CLI
+    try:
+        from kivy.app import App
+        from app import SSQApp
+        SSQApp().run()
+    except (ImportError, SystemExit):
+        # Not on Kivy/Android, run CLI
+        main()

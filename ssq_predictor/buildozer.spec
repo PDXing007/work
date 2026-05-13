@@ -22,7 +22,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = *.py, *.json, *.kv, ../ssq_全历史.json
+source.include_patterns = *.py, *.json, *.kv
 
 # (list) Source files to exclude
 source.exclude_exts = spec

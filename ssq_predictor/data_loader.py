@@ -18,28 +18,22 @@ from typing import List, Dict, Tuple, Optional
 
 def _find_data_file():
     """Find ssq_全历史.json across different platforms"""
-    # Try relative to this file (desktop)
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path = os.path.join(base, "ssq_全历史.json")
-    if os.path.exists(path):
-        return path
-    # Try current dir
+    # Try current dir first (works on Android and when running from project root)
     if os.path.exists("ssq_全历史.json"):
         return "ssq_全历史.json"
-    # Try app dir
-    cwd = os.path.join(os.getcwd(), "ssq_全历史.json")
-    if os.path.exists(cwd):
-        return cwd
-    # On Android: try app private dir
-    try:
-        from android.storage import app_storage_path
-        android_path = os.path.join(app_storage_path(), "ssq_全历史.json")
-        if os.path.exists(android_path):
-            return android_path
-    except ImportError:
-        pass
-    # Return default (will raise FileNotFoundError if missing)
-    return path
+    # Try relative to this source file
+    here = os.path.dirname(os.path.abspath(__file__))
+    for rel in (".", "..", "../.."):
+        path = os.path.join(here, rel, "ssq_全历史.json")
+        if os.path.exists(path):
+            return path
+    # Try getcwd variants
+    for sub in (".", "app", "files", "files/app"):
+        path = os.path.join(os.getcwd(), sub, "ssq_全历史.json")
+        if os.path.exists(path):
+            return path
+    # Default (will raise FileNotFoundError if missing)
+    return os.path.join(os.getcwd(), "ssq_全历史.json")
 
 
 DATA_PATH = _find_data_file()
