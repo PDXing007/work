@@ -28,32 +28,43 @@ jobs:
       - name: Install buildozer
         run: pip install buildozer cython
 
-      - name: Setup Android SDK & Accept Licenses
+      - name: Accept Android SDK licenses
         run: |
-          # Install Android command-line tools
+          # Pre-create license files so sdkmanager doesn't prompt
           SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
-          mkdir -p $SDK_DIR
-          cd $SDK_DIR
-          # Download cmdline-tools
-          curl -sL -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -qo cmdline-tools.zip
-          # Accept all licenses
-          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$SDK_DIR --licenses 2>&1 || true
-          # Install required SDK components
-          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$SDK_DIR "platform-tools" "platforms;android-34" "build-tools;37.0.0" 2>&1 || true
-          echo "SDK setup done"
-          ls -la $SDK_DIR/platforms/ 2>/dev/null
-          ls -la $SDK_DIR/build-tools/ 2>/dev/null
+          mkdir -p $SDK_DIR/licenses
+          # Standard SDK license hashes - these are the accepted license fingerprints
+          cat > $SDK_DIR/licenses/android-sdk-license << 'LICEOF'
+          8933bad161af4178b1185d1a37fbf41ea5269c55
+          d56f5187479451eabf01fb78af6dfcb131a6481e
+          24333f8a63b6825ea9c5514f83c2829b004d1fee
+          LICEOF
+          cat > $SDK_DIR/licenses/android-sdk-preview-license << 'LICEOF'
+          84831b9409646a918e30573bab4c9c91346d8abd
+          LICEOF
+          echo "License files created"
+          ls -la $SDK_DIR/licenses/
 
       - name: Build APK
         working-directory: ssq_predictor
         run: |
-          echo "=== buildozer.spec check ==="
-          grep -E "title|version|requirements|android.arch|p4a.release" buildozer.spec || true
           echo "=== Keystore check ==="
           ls -la ssq-release.keystore || echo "KEYSTORE MISSING!"
-          echo "=== Buildozer build ==="
-          buildozer android release 2>&1
+          echo "=== Buildozer build (attempt 1) ==="
+          buildozer android release 2>&1 || {
+            echo "=== Accepting licenses via sdkmanager ==="
+            SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
+            # After buildozer downloads tools, find and use sdkmanager
+            for sdk in "$SDK_DIR/tools/bin/sdkmanager" "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"; do
+              if [ -f "$sdk" ]; then
+                echo "Found sdkmanager at $sdk"
+                yes | "$sdk" --sdk_root="$SDK_DIR" --licenses 2>&1 || true
+                break
+              fi
+            done
+            echo "=== Buildozer build (retry) ==="
+            buildozer android release 2>&1
+          }
           echo "=== Build exit: $? ==="
           ls -la bin/ 2>/dev/null || echo "bin/ empty"
           find . -name "*.apk" 2>/dev/null || echo "No APK"
