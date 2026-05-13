@@ -75,16 +75,31 @@ jobs:
           echo "=== SDK setup done ==="
           ls -la $SDK_DIR/platforms/ $SDK_DIR/build-tools/ $SDK_DIR/licenses/
 
+      - name: Generate JKS Keystore
+        working-directory: ssq_predictor
+        run: |
+          # Generate proper JKS keystore (PKCS12 not compatible with jarsigner)
+          keytool -genkey -v \
+            -keystore ssq-release.jks \
+            -alias ssqkey \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass ssq2026predictor \
+            -keypass ssq2026predictor \
+            -dname "CN=SSQ Predictor, OU=Dev, O=SSQ, L=Beijing, ST=Beijing, C=CN" \
+            -noprompt
+          echo "JKS keystore created"
+          ls -la ssq-release.jks
+
       - name: Build APK
         working-directory: ssq_predictor
         run: |
           echo "=== Keystore check ==="
-          ls -la ssq-release.keystore || echo "KEYSTORE MISSING!"
-          echo "=== Buildozer build ==="
-          buildozer android debug 2>&1
+          ls -la ssq-release.jks || echo "KEYSTORE MISSING!"
+          echo "=== Buildozer release build ==="
+          buildozer android release 2>&1
           echo "=== Build exit: $? ==="
           ls -la bin/ 2>/dev/null || echo "bin/ empty"
-          find . -name "*.apk" 2>/dev/null || echo "No APK"
+          find . -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "No APK"
 
       - name: Upload APK
         if: always()

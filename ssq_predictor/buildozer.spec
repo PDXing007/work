@@ -3,12 +3,11 @@
 # (str) Title of your application
 title = SSQ Predictor
 
-# (str) Keystore for signing release APK
-# (disabled: PKCS12 format not compatible with jarsigner, use JKS)
-#p4a.release_keyalias = ssqkey
-#p4a.release_keystore = ssq-release.keystore
-#p4a.release_keystore_pass = ssq2026predictor
-#p4a.release_keyalias_pass = ssq2026predictor
+# Release signing (JKS keystore generated during build)
+p4a.release_keyalias = ssqkey
+p4a.release_keystore = ssq-release.jks
+p4a.release_keystore_pass = ssq2026predictor
+p4a.release_keyalias_pass = ssq2026predictor
 
 # (str) Package name
 package.name = ssqpredictor
