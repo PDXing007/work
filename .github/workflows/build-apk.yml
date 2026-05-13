@@ -29,12 +29,22 @@ jobs:
       - name: Install buildozer
         run: |
           pip install buildozer cython
-          # Patch buildozer bug: meta.split('=') can fail on malformed metadata
-          BUILDOZER_FILE=$(python -c "import buildozer.targets.android; print(buildozer.targets.android.__file__)" 2>/dev/null)
-          if [ -f "$BUILDOZER_FILE" ]; then
-            sed -i 's/key, value = meta.split(.=.=. 1.)/if "=" in meta: key, value = meta.split("=", 1)/' "$BUILDOZER_FILE"
-            echo "Patched buildozer android.py"
-          fi
+          # Patch buildozer bug: meta.split('=', 1) crashes on malformed metadata
+          python -c "
+          import buildozer.targets.android as m
+          src = open(m.__file__).read()
+          old = \"key, value = meta.split('=', 1)\"
+          new = \"if '=' not in meta: continue; key, value = meta.split('=', 1)\"
+          if old in src:
+              open(m.__file__, 'w').write(src.replace(old, new))
+              print('PATCHED buildozer android.py')
+          else:
+              print('Patch target not found, checking for alternative pattern...')
+              # Try with different spacing
+              for pat in ['meta.split(\"=\", 1)', \"meta.split('=', 1)\"]:
+                  if pat in src:
+                      print(f'Found: {pat}')
+          "
 
       - name: Setup Android SDK (manual)
         run: |
