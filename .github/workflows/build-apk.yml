@@ -30,30 +30,31 @@ jobs:
 
       - name: Setup Android SDK (manual)
         run: |
+          # Use Java 17 (required by sdkmanager)
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
+          echo "JAVA_HOME=$JAVA_HOME"
+          java -version 2>&1
+
           SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
           mkdir -p $SDK_DIR
 
-          # Download cmdline-tools (the only working SDK manager now)
+          # Download cmdline-tools
           echo "Downloading cmdline-tools..."
           curl -sL -o /tmp/cmdline.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip -qo /tmp/cmdline.zip -d $SDK_DIR/cmdline-tools
-          # Rename to "latest" as per standard layout
           mv $SDK_DIR/cmdline-tools/cmdline-tools $SDK_DIR/cmdline-tools/latest 2>/dev/null || true
 
-          # Create symlink to old tools path so buildozer can find it
+          # Create symlink for buildozer compatibility
           mkdir -p $SDK_DIR/tools/bin
           ln -sf $SDK_DIR/cmdline-tools/latest/bin/sdkmanager $SDK_DIR/tools/bin/sdkmanager
-          ln -sf $SDK_DIR/cmdline-tools/latest/bin/avdmanager $SDK_DIR/tools/bin/avdmanager
 
-          # Accept all licenses
-          echo "Accepting licenses..."
-          yes | $SDK_DIR/tools/bin/sdkmanager --sdk_root=$SDK_DIR --licenses 2>&1 | tail -5
-
-          # Install required SDK packages
-          echo "Installing SDK packages..."
+          # Accept licenses and install SDK packages
+          echo "Accepting licenses + installing SDK..."
+          yes | $SDK_DIR/tools/bin/sdkmanager --sdk_root=$SDK_DIR --licenses 2>&1 | tail -3
           yes | $SDK_DIR/tools/bin/sdkmanager --sdk_root=$SDK_DIR "platform-tools" "platforms;android-34" "build-tools;37.0.0" 2>&1 | tail -10
 
-          echo "=== SDK setup complete ==="
+          echo "=== SDK setup done ==="
           ls -la $SDK_DIR/platforms/ $SDK_DIR/build-tools/ $SDK_DIR/licenses/
 
       - name: Build APK
