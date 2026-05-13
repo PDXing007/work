@@ -140,38 +140,32 @@ class Ball(FloatLayout):
         except Exception: pass
 
 # ============= Card Button =============
-class CardBtn(FloatLayout):
+class CardBtn(Button):
     def __init__(self,title,desc,color,on_press=None,**kw):
         super().__init__(**kw)
         self.size_hint_y=None; self.height=dp(72)
-        self._cb = on_press
+        self.background_normal=''; self.background_color=(0,0,0,0)
+        self.color=WHT; self.halign='left'; self.valign='middle'
+        self.text=f"[b][size=16sp]{title}[/size][/b]\n[size=11sp]{desc}[/size]"
+        self.markup=True; self.padding=(dp(24),dp(8),dp(8),dp(8))
+        if on_press: self.bind(on_press=on_press)
+        # Canvas background
         with self.canvas.before:
-            Color(*SURF); self._bg=RoundedRectangle(size=self.size,pos=self.pos,radius=[dp(14)])
+            Color(*SURF)
+            self._bg=RoundedRectangle(size=self.size,pos=self.pos,radius=[dp(14)])
         self.bind(pos=self._upd,size=self._upd)
-        # Color bar
-        bar=Widget(size_hint=(None,1),width=dp(5),pos_hint={'x':0,'y':0})
-        with bar.canvas: Color(*color); RoundedRectangle(pos=bar.pos,size=bar.size,radius=[dp(3)])
-        bar.bind(pos=self._rb(color),size=self._rb(color))
-        self.add_widget(bar)
-        # Text
-        lbl=Label(text=f"[b][size=16sp]{title}[/size][/b]\n[size=11sp]{desc}[/size]",
-                  markup=True,color=WHT,pos_hint={'x':.09,'center_y':.5},size_hint=(.78,1),halign='left',valign='middle')
-        self.add_widget(lbl)
-        # Arrow
-        self.add_widget(Label(text=">",font_size=sp(22),color=TXT2,pos_hint={'right':.97,'center_y':.5},
-                              size_hint=(None,1),width=dp(20),halign='right',valign='middle'))
-    def on_touch_down(self,touch):
-        if self.collide_point(*touch.pos) and self._cb:
-            self._cb(None)
-            return True
-        return super().on_touch_down(touch)
+        # Color bar on left
+        with self.canvas.after:
+            Color(*color)
+            self._bar=RoundedRectangle(pos=(self.x+dp(14),self.y+dp(16)),size=(dp(4),dp(40)),radius=[dp(2)])
+        self.bind(pos=self._upd_bar(color),size=self._upd_bar(color))
     def _upd(self,*a): self._bg.size=self.size; self._bg.pos=self.pos
-    def _rb(self,c):
+    def _upd_bar(self,c):
         def _cb(w,v):
-            w.canvas.clear()
-            with w.canvas:
+            w.canvas.after.clear()
+            with w.canvas.after:
                 Color(*c)
-                RoundedRectangle(pos=w.pos,size=w.size,radius=[dp(3)])
+                RoundedRectangle(pos=(w.x+dp(14),w.y+dp(16)),size=(dp(4),w.height-dp(32)),radius=[dp(2)])
         return _cb
 
 # ============= Screen 1: Main =============
