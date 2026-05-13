@@ -42,10 +42,13 @@ DATA_PATH = _find_data_file()
 def load_history(path: str = DATA_PATH) -> List[Dict]:
     """加载全部历史数据，返回按时间倒序的列表（最新在前）"""
     if not os.path.exists(path):
-        raise FileNotFoundError(f"数据文件不存在: {path}")
+        # Create empty data file if missing (first run / Android fresh install)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        return []
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return data
+    return data if isinstance(data, list) else []
 
 
 def parse_record(record: Dict) -> Dict:

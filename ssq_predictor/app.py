@@ -140,32 +140,42 @@ class Ball(FloatLayout):
         except Exception: pass
 
 # ============= Card Button =============
-class CardBtn(Button):
+class CardBtn(FloatLayout):
     def __init__(self,title,desc,color,on_press=None,**kw):
         super().__init__(**kw)
-        self.size_hint_y=None; self.height=dp(72)
-        self.background_normal=''; self.background_color=(0,0,0,0)
-        self.color=WHT; self.halign='left'; self.valign='middle'
-        self.text=f"[b][size=16sp]{title}[/size][/b]\n[size=11sp]{desc}[/size]"
-        self.markup=True; self.padding=(dp(24),dp(8),dp(8),dp(8))
-        if on_press: self.bind(on_press=on_press)
-        # Canvas background
+        self.size_hint_y=None; self.height=dp(70)
         with self.canvas.before:
             Color(*SURF)
             self._bg=RoundedRectangle(size=self.size,pos=self.pos,radius=[dp(14)])
         self.bind(pos=self._upd,size=self._upd)
-        # Color bar on left
-        with self.canvas.after:
+        # Left color bar
+        bar=Widget(size_hint=(None,1),width=dp(5),pos_hint={'x':0,'y':0})
+        with bar.canvas:
             Color(*color)
-            self._bar=RoundedRectangle(pos=(self.x+dp(14),self.y+dp(16)),size=(dp(4),dp(40)),radius=[dp(2)])
-        self.bind(pos=self._upd_bar(color),size=self._upd_bar(color))
+            RoundedRectangle(pos=bar.pos,size=bar.size,radius=[dp(3)])
+        bar.bind(pos=self._rb(color),size=self._rb(color))
+        self.add_widget(bar)
+        # Text
+        txt=Label(text=f"[b][size=16sp]{title}[/size][/b]\n[size=11sp]{desc}[/size]",
+                  markup=True,color=WHT,halign='left',valign='middle',
+                  pos_hint={'x':.09,'center_y':.5},size_hint=(.75,1))
+        self.add_widget(txt)
+        # Arrow
+        self.add_widget(Label(text=">",font_size=sp(22),color=TXT2,pos_hint={'right':.97,'center_y':.5},
+                              size_hint=(None,1),width=dp(20),halign='right',valign='middle'))
+        # Invisible Button overlay (covers entire card)
+        if on_press:
+            btn=Button(text=".",background_normal='',background_color=(0,0,0,0),color=(0,0,0,0),
+                       pos_hint={'x':0,'y':0},size_hint=(1,1),font_size=sp(1))
+            btn.bind(on_press=on_press)
+            self.add_widget(btn)
     def _upd(self,*a): self._bg.size=self.size; self._bg.pos=self.pos
-    def _upd_bar(self,c):
+    def _rb(self,c):
         def _cb(w,v):
-            w.canvas.after.clear()
-            with w.canvas.after:
+            w.canvas.clear()
+            with w.canvas:
                 Color(*c)
-                RoundedRectangle(pos=(w.x+dp(14),w.y+dp(16)),size=(dp(4),w.height-dp(32)),radius=[dp(2)])
+                RoundedRectangle(pos=w.pos,size=w.size,radius=[dp(3)])
         return _cb
 
 # ============= Screen 1: Main =============
@@ -249,6 +259,7 @@ class MainScreen(Screen):
             self._info.text="数据未找到"; self._dot.text="○"; self._tag.text=""
 
     def _refresh(self,*a):
+        if self._tag.text=="联网中…": return  # prevent double-click
         self._tag.text="联网中…"; self._dot.text="◌"
         self._prog.opacity=1; self._prog.value=0
         def run():
