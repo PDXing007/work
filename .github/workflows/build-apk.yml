@@ -81,7 +81,7 @@ jobs:
           echo "=== Keystore check ==="
           ls -la ssq-release.keystore || echo "KEYSTORE MISSING!"
           echo "=== Buildozer build ==="
-          buildozer android release 2>&1
+          buildozer android debug 2>&1
           echo "=== Build exit: $? ==="
           ls -la bin/ 2>/dev/null || echo "bin/ empty"
           find . -name "*.apk" 2>/dev/null || echo "No APK"
