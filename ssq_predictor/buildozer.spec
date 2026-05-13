@@ -86,22 +86,22 @@ log_level = 2
 warn_on_permissions = 1
 
 # (str) Custom gradle dependencies
-android.gradle_dependencies =
+#android.gradle_dependencies =
 
 # (list) Java classes to add as activities
-android.add_activities =
+#android.add_activities =
 
 # (str) OUYA Console category
-ouya.category = NONE
+#ouya.category = NONE
 
 # (str) Which.NET framework to target
-android.meta_data =
+#android.meta_data =
 
 # (str) URL scheme
-android.url_scheme =
+#android.url_scheme =
 
 # (str) Custom AndroidManifest.xml
-android.manifest.custom =
+#android.manifest.custom =
 
 # (str) Activity that acts as the application entry
 android.entrypoint = org.kivy.android.PythonActivity
