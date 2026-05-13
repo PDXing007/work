@@ -93,6 +93,9 @@ jobs:
       - name: Build APK
         working-directory: ssq_predictor
         run: |
+          # Ensure data file is in the app directory for APK bundling
+          cp ../ssq_全历史.json ./ssq_全历史.json 2>/dev/null || true
+          echo "Data file: $(ls -la ssq_全历史.json 2>/dev/null || echo 'NOT FOUND')"
           echo "=== Buildozer debug build ==="
           buildozer android debug 2>&1
           echo "=== Build exit: $? ==="
@@ -123,9 +126,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: SSQ-Predictor-Build-Output
-          path: |
-            ssq_predictor/bin/*.apk
-            ssq_predictor/bin/*.aab
-            ssq_predictor/.buildozer/android/platform/*.log
+          name: SSQ-Predictor-APK
+          path: ssq_predictor/bin/SSQPredictor-release.apk
           retention-days: 30

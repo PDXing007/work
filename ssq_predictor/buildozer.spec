@@ -22,7 +22,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = *.py, *.json, *.kv
+source.include_patterns = *.py, *.json, *.kv, ../ssq_全历史.json
 
 # (list) Source files to exclude
 source.exclude_exts = spec
@@ -37,7 +37,7 @@ version = 1.0
 orientation = portrait
 
 # (list) Permissions
-android.permissions = INTERNET
+android.permissions = INTERNET, ACCESS_NETWORK_STATE
 
 # (int) Target Android API
 android.api = 34

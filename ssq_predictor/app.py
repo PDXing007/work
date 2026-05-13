@@ -414,8 +414,14 @@ class MainScreen(Screen):
             self.dash_label.markup = True
             self.dash_badge.text = "[b]●[/b] 就绪"
             self.status_bar.text = f"最后更新: {datetime.now().strftime('%H:%M')}"
+        except FileNotFoundError:
+            self.dash_label.text = "[b]数据文件未找到[/b]\n请点击刷新按钮下载"
+            self.dash_badge.text = "[b]○[/b] 无数据"
+            self.status_bar.text = "需要联网获取开奖数据"
         except Exception as e:
-            self.dash_label.text = f"加载失败\n{str(e)[:30]}"
+            self.dash_label.text = f"加载失败\n{str(e)[:40]}"
+            self.dash_badge.text = "[b]![/b] 错误"
+            self.status_bar.text = str(e)[:60]
 
     def _do_refresh(self, *a):
         self.dash_badge.text = "[b]◌[/b] 刷新中"

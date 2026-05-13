@@ -1,0 +1,4 @@
+密钥文件: ssq-release.keystore
+别名:     ssqkey
+密码:     ssq2026predictor
+有效期:   10000 天

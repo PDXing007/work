@@ -12,9 +12,37 @@
 
 import json
 import os
+import sys
 from typing import List, Dict, Tuple, Optional
 
-DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ssq_全历史.json")
+
+def _find_data_file():
+    """Find ssq_全历史.json across different platforms"""
+    # Try relative to this file (desktop)
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base, "ssq_全历史.json")
+    if os.path.exists(path):
+        return path
+    # Try current dir
+    if os.path.exists("ssq_全历史.json"):
+        return "ssq_全历史.json"
+    # Try app dir
+    cwd = os.path.join(os.getcwd(), "ssq_全历史.json")
+    if os.path.exists(cwd):
+        return cwd
+    # On Android: try app private dir
+    try:
+        from android.storage import app_storage_path
+        android_path = os.path.join(app_storage_path(), "ssq_全历史.json")
+        if os.path.exists(android_path):
+            return android_path
+    except ImportError:
+        pass
+    # Return default (will raise FileNotFoundError if missing)
+    return path
+
+
+DATA_PATH = _find_data_file()
 
 
 def load_history(path: str = DATA_PATH) -> List[Dict]:
