@@ -103,16 +103,13 @@ class DataManager:
                     d=r2.json(); rd=d.get("frontWinningNum",""); bl=d.get("backWinningNum","")
                     if rd and bl: data.append({"期号":iss,"开奖日期":d.get("openTime",""),"红球":rd,"蓝球":bl.strip()})
             data.sort(key=lambda x:x["期号"],reverse=True)
-            # Save to multiple possible locations
-            saved=False
-            for p in [os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","ssq_全历史.json"),
-                      os.path.join(os.getcwd(),"ssq_全历史.json"),
-                      os.path.join(os.getcwd(),"..","ssq_全历史.json")]:
-                try:
-                    p=os.path.normpath(p)
-                    with open(p,"w",encoding="utf-8") as f: json.dump(data,f,ensure_ascii=False)
-                    saved=True; break
-                except: pass
+            # Save to the same path that load_history uses
+            from data_loader import _find_data_file
+            save_path=_find_data_file()
+            try:
+                with open(save_path,"w",encoding="utf-8") as f: json.dump(data,f,ensure_ascii=False)
+                saved=True
+            except: saved=False
             if not saved: self.status_msg="保存失败"; return False
             self.load(); self.status_msg=f"已更新{len(data)}期"; return True
         except Exception as e:
