@@ -38,7 +38,21 @@ jobs:
           echo "=== Data file check ==="
           ls -la ../ssq_全历史.json || echo "DATA FILE MISSING!"
           echo "=== Buildozer build ==="
-          buildozer android release 2>&1
+          # Run buildozer; if it fails due to license, accept and retry
+          buildozer android release 2>&1 || {
+            echo "=== First build attempt failed, accepting SDK licenses ==="
+            SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
+            # Try to find sdkmanager
+            SDKMANAGER=$(find $SDK_DIR -name sdkmanager -type f 2>/dev/null | head -1)
+            if [ -n "$SDKMANAGER" ]; then
+              yes | $SDKMANAGER --licenses --sdk_root=$SDK_DIR 2>&1 || true
+            fi
+            # Also create license file as fallback
+            mkdir -p $SDK_DIR/licenses
+            echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDK_DIR/licenses/android-sdk-license
+            echo "Retrying build..."
+            buildozer android release 2>&1
+          }
           echo "=== Build exit code: $? ==="
           echo "=== Bin directory ==="
           ls -la bin/ 2>/dev/null || echo "bin/ not found"
