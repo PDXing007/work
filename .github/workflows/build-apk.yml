@@ -28,6 +28,23 @@ jobs:
       - name: Install buildozer
         run: pip install buildozer cython
 
+      - name: Setup Android SDK & Accept Licenses
+        run: |
+          # Install Android command-line tools
+          SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $SDK_DIR
+          cd $SDK_DIR
+          # Download cmdline-tools
+          curl -sL -o cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -qo cmdline-tools.zip
+          # Accept all licenses
+          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$SDK_DIR --licenses 2>&1 || true
+          # Install required SDK components
+          yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$SDK_DIR "platform-tools" "platforms;android-34" "build-tools;37.0.0" 2>&1 || true
+          echo "SDK setup done"
+          ls -la $SDK_DIR/platforms/ 2>/dev/null
+          ls -la $SDK_DIR/build-tools/ 2>/dev/null
+
       - name: Build APK
         working-directory: ssq_predictor
         run: |
@@ -35,28 +52,11 @@ jobs:
           grep -E "title|version|requirements|android.arch|p4a.release" buildozer.spec || true
           echo "=== Keystore check ==="
           ls -la ssq-release.keystore || echo "KEYSTORE MISSING!"
-          echo "=== Data file check ==="
-          ls -la ../ssq_全历史.json || echo "DATA FILE MISSING!"
           echo "=== Buildozer build ==="
-          # Run buildozer; if it fails due to license, accept and retry
-          buildozer android release 2>&1 || {
-            echo "=== First build attempt failed, accepting SDK licenses ==="
-            SDK_DIR=$HOME/.buildozer/android/platform/android-sdk
-            # Try to find sdkmanager
-            SDKMANAGER=$(find $SDK_DIR -name sdkmanager -type f 2>/dev/null | head -1)
-            if [ -n "$SDKMANAGER" ]; then
-              yes | $SDKMANAGER --licenses --sdk_root=$SDK_DIR 2>&1 || true
-            fi
-            # Also create license file as fallback
-            mkdir -p $SDK_DIR/licenses
-            echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $SDK_DIR/licenses/android-sdk-license
-            echo "Retrying build..."
-            buildozer android release 2>&1
-          }
-          echo "=== Build exit code: $? ==="
-          echo "=== Bin directory ==="
-          ls -la bin/ 2>/dev/null || echo "bin/ not found"
-          find . -name "*.apk" 2>/dev/null || echo "No APK found anywhere"
+          buildozer android release 2>&1
+          echo "=== Build exit: $? ==="
+          ls -la bin/ 2>/dev/null || echo "bin/ empty"
+          find . -name "*.apk" 2>/dev/null || echo "No APK"
 
       - name: Upload APK
         if: always()
