@@ -28,6 +28,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.widget import Widget
 from kivy.clock import Clock
 from kivy.core.window import Window
+from kivy.core.text import LabelBase
 from kivy.metrics import dp, sp
 from kivy.graphics import (
     Color, Rectangle, RoundedRectangle, Ellipse, Line, Mesh, PushMatrix, PopMatrix, Rotate,
@@ -36,6 +37,27 @@ from kivy.graphics.context_instructions import Transform
 from kivy.animation import Animation
 from kivy.utils import get_color_from_hex, platform
 from kivy.properties import NumericProperty, StringProperty, ListProperty, BooleanProperty
+
+# Register Chinese font — override Roboto with a CJK-capable font
+_CHINESE_FONT = None
+for _fp in [
+    "/system/fonts/DroidSansFallback.ttf",
+    "/system/fonts/NotoSansCJK-Regular.ttc",
+    "/system/fonts/NotoSansSC-Regular.otf",
+    "DroidSansFallback.ttf",
+]:
+    try:
+        LabelBase.register("Roboto", _fp)
+        _CHINESE_FONT = "Roboto"
+        break
+    except Exception:
+        continue
+
+if _CHINESE_FONT is None:
+    try:
+        LabelBase.register("Roboto", "Roboto.ttf")  # keep default
+    except Exception:
+        pass
 
 # ---------- 预测 & 爬虫 ----------
 from data_loader import load_history, load_parsed, get_data_summary
@@ -874,6 +896,8 @@ class SSQApp(App):
     icon = "icon.png"
 
     def build(self):
+        # Set global default font for Chinese support
+        from kivy.resources import resource_find
         Window.clearcolor = C_BG
         sm = ScreenManager(transition=SlideTransition(duration=0.25))
         sm.add_widget(MainScreen(name='main'))
