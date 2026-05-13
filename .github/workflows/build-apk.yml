@@ -98,8 +98,12 @@ jobs:
           echo "=== Buildozer release build ==="
           buildozer android release 2>&1
           echo "=== Build exit: $? ==="
-          ls -la bin/ 2>/dev/null || echo "bin/ empty"
-          find . -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "No APK"
+          echo "=== bin/ ==="
+          ls -laR bin/ 2>/dev/null || echo "bin/ empty"
+          echo "=== APK/AAB search ==="
+          find . -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "None found"
+          echo "=== .buildozer dists ==="
+          find .buildozer/android/platform/build-arm64-v8a/dists -name "*.apk" -o -name "*.aab" 2>/dev/null || echo "None found"
 
       - name: Upload APK
         if: always()
@@ -108,5 +112,6 @@ jobs:
           name: SSQ-Predictor-Build-Output
           path: |
             ssq_predictor/bin/*.apk
+            ssq_predictor/bin/*.aab
             ssq_predictor/.buildozer/android/platform/*.log
           retention-days: 30
