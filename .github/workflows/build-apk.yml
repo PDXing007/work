@@ -96,14 +96,14 @@ jobs:
           # Ensure data file is in the app directory for APK bundling
           cp ../ssq_全历史.json ./ssq_全历史.json 2>/dev/null || true
           echo "Data file: $(ls -la ssq_全历史.json 2>/dev/null || echo 'NOT FOUND')"
-          # Download Chinese font for Android
+          # Download Chinese font for Android (bundled in APK)
           echo "Downloading Chinese font..."
-          curl -sL -o DroidSansFallback.ttf \
-            "https://raw.githubusercontent.com/android/platform_frameworks_base/refs/heads/master/data/fonts/DroidSansFallback.ttf" 2>&1 || \
-          curl -sL -o DroidSansFallback.ttf \
-            "https://github.com/aosp-mirror/platform_frameworks_base/raw/master/data/fonts/DroidSansFallback.ttf" 2>&1 || \
-          echo "Font download failed, will use system font"
-          ls -la DroidSansFallback.ttf 2>/dev/null || echo "No font file"
+          for url in \
+            "https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/master/data/fonts/DroidSansFallback.ttf" \
+            "https://github.com/aosp-mirror/platform_frameworks_base/raw/master/data/fonts/DroidSansFallback.ttf"; do
+            curl -sL -o DroidSansFallback.ttf "$url" 2>&1 && break
+          done
+          ls -la DroidSansFallback.ttf 2>/dev/null && echo "Font OK" || echo "Font download failed"
           echo "=== Buildozer debug build ==="
           buildozer android debug 2>&1
           echo "=== Build exit: $? ==="

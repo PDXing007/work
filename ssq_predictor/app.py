@@ -27,14 +27,22 @@ from kivy.graphics import Color, Rectangle, RoundedRectangle, Ellipse, Line
 from kivy.utils import get_color_from_hex
 
 # ---- Font ----
-for fp in ["C:/Windows/Fonts/msyh.ttc",
-           "/system/fonts/DroidSansChinese.ttf",
-           "/system/fonts/HwChinese-Medium.ttf",
-           "/system/fonts/DroidSansFallback.ttf",
-           "/system/fonts/NotoSansCJK-Regular.ttc"]:
+_CJK_FONT = None
+for _fp in [
+    "DroidSansFallback.ttf",                      # bundled in APK
+    "C:/Windows/Fonts/msyh.ttc",                  # Windows dev
+    "/system/fonts/DroidSansChinese.ttf",          # Huawei EMUI
+    "/system/fonts/HwChinese-Medium.ttf",          # Huawei EMUI v2
+    "/system/fonts/DroidSansFallback.ttf",         # AOSP / Samsung
+    "/system/fonts/NotoSansSC-Regular.otf",        # Android 7+
+    "/system/fonts/NotoSansCJK-Regular.ttc",       # Some custom ROMs
+    "/system/fonts/MiLanProVF.ttf",                # MIUI (Xiaomi/Redmi)
+    "/system/fonts/Roboto-Regular.ttf",            # fallback - no CJK
+]:
     try:
-        LabelBase.register("_cjk",fp)
-        LabelBase._fonts["Roboto"]=LabelBase._fonts["_cjk"]
+        LabelBase.register("_cjk",_fp)
+        LabelBase._fonts["Roboto"] = LabelBase._fonts["_cjk"]
+        _CJK_FONT = _fp
         break
     except Exception:
         pass
@@ -136,6 +144,7 @@ class CardBtn(FloatLayout):
     def __init__(self,title,desc,color,on_press=None,**kw):
         super().__init__(**kw)
         self.size_hint_y=None; self.height=dp(72)
+        self._cb = on_press
         with self.canvas.before:
             Color(*SURF); self._bg=RoundedRectangle(size=self.size,pos=self.pos,radius=[dp(14)])
         self.bind(pos=self._upd,size=self._upd)
@@ -151,10 +160,11 @@ class CardBtn(FloatLayout):
         # Arrow
         self.add_widget(Label(text=">",font_size=sp(22),color=TXT2,pos_hint={'right':.97,'center_y':.5},
                               size_hint=(None,1),width=dp(20),halign='right',valign='middle'))
-        # Click overlay
-        if on_press:
-            btn=Button(text="",background_normal='',background_color=(0,0,0,0),pos_hint={'x':0,'y':0},size_hint=(1,1))
-            btn.bind(on_press=on_press); self.add_widget(btn)
+    def on_touch_down(self,touch):
+        if self.collide_point(*touch.pos) and self._cb:
+            self._cb(None)
+            return True
+        return super().on_touch_down(touch)
     def _upd(self,*a): self._bg.size=self.size; self._bg.pos=self.pos
     def _rb(self,c):
         def _cb(w,v):
