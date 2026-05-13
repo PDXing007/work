@@ -27,23 +27,28 @@ from kivy.graphics import Color, Rectangle, RoundedRectangle, Ellipse, Line
 from kivy.utils import get_color_from_hex
 
 # ---- Font ----
-_CJK_FONT = None
+# Try to load a CJK font WITHOUT breaking the default Roboto
+_cjk_registered = False
 for _fp in [
-    "DroidSansFallback.ttf",                      # bundled in APK
     "C:/Windows/Fonts/msyh.ttc",                  # Windows dev
     "/system/fonts/DroidSansChinese.ttf",          # Huawei EMUI
     "/system/fonts/HwChinese-Medium.ttf",          # Huawei EMUI v2
     "/system/fonts/DroidSansFallback.ttf",         # AOSP / Samsung
     "/system/fonts/NotoSansSC-Regular.otf",        # Android 7+
-    "/system/fonts/NotoSansCJK-Regular.ttc",       # Some custom ROMs
+    "/system/fonts/NotoSansCJK-Regular.ttc",       # Custom ROMs
     "/system/fonts/MiLanProVF.ttf",                # MIUI (Xiaomi/Redmi)
-    "/system/fonts/Roboto-Regular.ttf",            # fallback - no CJK
+    "DroidSansFallback.ttf",                       # bundled in APK
 ]:
     try:
-        LabelBase.register("_cjk",_fp)
-        LabelBase._fonts["Roboto"] = LabelBase._fonts["_cjk"]
-        _CJK_FONT = _fp
+        LabelBase.register("CJK", _fp)
+        _cjk_registered = True
         break
+    except Exception:
+        pass
+# Only swap Roboto if CJK font was successfully loaded
+if _cjk_registered:
+    try:
+        LabelBase._fonts["Roboto"] = LabelBase._fonts["CJK"]
     except Exception:
         pass
 

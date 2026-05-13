@@ -19,10 +19,10 @@ package.domain = org.ssqpredictor
 source.dir = .
 
 # (list) Source files to include (let empty to include all)
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,png,jpg,kv,atlas,json,ttf,ttf
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = *.py, *.json, *.kv
+source.include_patterns = *.py, *.json, *.kv, *.ttf, *.ttf
 
 # (list) Source files to exclude
 source.exclude_exts = spec
