@@ -27,9 +27,17 @@ from kivy.graphics import Color, Rectangle, RoundedRectangle, Ellipse, Line
 from kivy.utils import get_color_from_hex
 
 # ---- Font ----
-for fp in ["C:/Windows/Fonts/msyh.ttc","/system/fonts/DroidSansFallback.ttf"]:
-    try: LabelBase.register("_cjk",fp); LabelBase._fonts["Roboto"]=LabelBase._fonts["_cjk"]; break
-    except: pass
+for fp in ["C:/Windows/Fonts/msyh.ttc",
+           "/system/fonts/DroidSansChinese.ttf",
+           "/system/fonts/HwChinese-Medium.ttf",
+           "/system/fonts/DroidSansFallback.ttf",
+           "/system/fonts/NotoSansCJK-Regular.ttc"]:
+    try:
+        LabelBase.register("_cjk",fp)
+        LabelBase._fonts["Roboto"]=LabelBase._fonts["_cjk"]
+        break
+    except Exception:
+        pass
 
 # ---- Colors ----
 BG   = get_color_from_hex("#0A0E14")
