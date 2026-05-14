@@ -30,16 +30,17 @@ for _fp in [
     "/system/fonts/NotoSansSC-Regular.otf",           # Android 7+
     "/system/fonts/NotoSansCJK-Regular.ttc",          # Custom ROMs
     "/system/fonts/MiLanProVF.ttf",                   # MIUI (Xiaomi/Redmi)
-    "wqy-microhei.ttc",                               # bundled — Latin + CJK combined (try first)
-    "fonts/wqy-microhei.ttc",                         # bundled in fonts/ subdir
+    "wqy-microhei.ttf",                               # bundled — Latin + CJK combined (try first)
+    "fonts/wqy-microhei.ttf",                         # bundled in fonts/ subdir
     "DroidSansFallback.ttf",                          # bundled in APK (CJK fallback, no Latin)
 ]:
     try:
         LabelBase.register("Roboto", _fp)  # Register BEFORE App import!
+        print(f"FONT_OK: {_fp}")
         _font_ok = True
         break
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f"FONT_FAIL: {_fp} -> {_e}")
 
 # ═══════════ NOW import the rest of Kivy ═══════════
 from kivy.app import App
