@@ -24,15 +24,15 @@ resource_add_path(os.getcwd())
 _font_ok = False
 for _fp in [
     "C:/Windows/Fonts/msyh.ttc",                     # Windows dev
-    "/system/fonts/DroidSansChinese.ttf",             # Huawei EMUI
+    "wqy-microhei.ttf",                               # bundled — Latin + CJK combined (best)
+    "fonts/wqy-microhei.ttf",                         # bundled in fonts/ subdir
+    "/system/fonts/DroidSansChinese.ttf",             # Huawei EMUI (CJK-only fallback)
     "/system/fonts/HwChinese-Medium.ttf",             # Huawei EMUI v2
     "/system/fonts/DroidSansFallback.ttf",            # AOSP / Samsung
     "/system/fonts/NotoSansSC-Regular.otf",           # Android 7+
     "/system/fonts/NotoSansCJK-Regular.ttc",          # Custom ROMs
     "/system/fonts/MiLanProVF.ttf",                   # MIUI (Xiaomi/Redmi)
-    "wqy-microhei.ttf",                               # bundled — Latin + CJK combined (try first)
-    "fonts/wqy-microhei.ttf",                         # bundled in fonts/ subdir
-    "DroidSansFallback.ttf",                          # bundled in APK (CJK fallback, no Latin)
+    "DroidSansFallback.ttf",                          # bundled — CJK-only last resort
 ]:
     try:
         LabelBase.register("Roboto", _fp)  # Register BEFORE App import!
