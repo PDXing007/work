@@ -30,9 +30,9 @@ for _fp in [
     "/system/fonts/NotoSansSC-Regular.otf",           # Android 7+
     "/system/fonts/NotoSansCJK-Regular.ttc",          # Custom ROMs
     "/system/fonts/MiLanProVF.ttf",                   # MIUI (Xiaomi/Redmi)
-    "DroidSansFallback.ttf",                          # bundled in APK (CJK fallback)
-    "wqy-microhei.ttc",                               # bundled — Latin + CJK combined
+    "wqy-microhei.ttc",                               # bundled — Latin + CJK combined (try first)
     "fonts/wqy-microhei.ttc",                         # bundled in fonts/ subdir
+    "DroidSansFallback.ttf",                          # bundled in APK (CJK fallback, no Latin)
 ]:
     try:
         LabelBase.register("Roboto", _fp)  # Register BEFORE App import!
