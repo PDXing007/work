@@ -98,9 +98,10 @@ class DataManager:
             try: data=load_history()
             except: data=[]
             s=requests.Session(); s.trust_env=True
+            _hdrs={"User-Agent":"Mozilla/5.0","Referer":"https://www.zhcw.com/"}
             r=s.get("https://jc.zhcw.com/port/client_json.php",
                     params={"transactionType":"10001003","lotteryId":"1","count":"10"},
-                    headers={"User-Agent":"Mozilla/5.0"},timeout=15)
+                    headers=_hdrs,timeout=15)
             api=r.json()
             if api.get("resCode")!="000000": self.status_msg="API错误"; return False
             exist={d["期号"] for d in data}
@@ -111,7 +112,7 @@ class DataManager:
                 self.status_msg=f"抓取{i+1}/{len(missing)}"
                 r2=s.get("https://jc.zhcw.com/port/client_json.php",
                         params={"transactionType":"10001002","lotteryId":"1","issue":iss},
-                        headers={"User-Agent":"Mozilla/5.0"},timeout=15)
+                        headers=_hdrs,timeout=15)
                 if r2.status_code==200:
                     d=r2.json(); rd=d.get("frontWinningNum",""); bl=d.get("backWinningNum","")
                     if rd and bl: data.append({"期号":iss,"开奖日期":d.get("openTime",""),"红球":rd,"蓝球":bl.strip()})
