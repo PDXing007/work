@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 SSQ Predictor — Kivy 移动端应用 (美化版)
@@ -29,7 +30,9 @@ for _fp in [
     "/system/fonts/NotoSansSC-Regular.otf",           # Android 7+
     "/system/fonts/NotoSansCJK-Regular.ttc",          # Custom ROMs
     "/system/fonts/MiLanProVF.ttf",                   # MIUI (Xiaomi/Redmi)
-    "DroidSansFallback.ttf",                          # bundled in APK
+    "DroidSansFallback.ttf",                          # bundled in APK (CJK fallback)
+    "wqy-microhei.ttc",                               # bundled — Latin + CJK combined
+    "fonts/wqy-microhei.ttc",                         # bundled in fonts/ subdir
 ]:
     try:
         LabelBase.register("Roboto", _fp)  # Register BEFORE App import!
