@@ -49,6 +49,7 @@ from kivy.uix.progressbar import ProgressBar
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.widget import Widget
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.metrics import dp, sp
@@ -145,9 +146,13 @@ class Ball(FloatLayout):
         except Exception: pass
 
 # ============= Card Button =============
-class CardBtn(FloatLayout):
+class CardBtn(ButtonBehavior, FloatLayout):
+    always_release = True  # ensure touch release fires on Android SDL2
+
     def __init__(self,title,desc,color,on_press=None,**kw):
         super().__init__(**kw)
+        if on_press:
+            self.bind(on_press=on_press)
         self.size_hint_y=None; self.height=dp(70)
         with self.canvas.before:
             Color(*SURF)
@@ -168,12 +173,7 @@ class CardBtn(FloatLayout):
         # Arrow
         self.add_widget(Label(text=">",font_size=sp(22),color=TXT2,pos_hint={'right':.97,'center_y':.5},
                               size_hint=(None,1),width=dp(20),halign='right',valign='middle'))
-        # Invisible Button overlay (covers entire card)
-        if on_press:
-            btn=Button(text=".",background_normal='',background_color=(0,0,0,0),color=(0,0,0,0),
-                       pos_hint={'x':0,'y':0},size_hint=(1,1),font_size=sp(1))
-            btn.bind(on_press=on_press)
-            self.add_widget(btn)
+
     def _upd(self,*a): self._bg.size=self.size; self._bg.pos=self.pos
     def _rb(self,c):
         def _cb(w,v):
@@ -188,6 +188,7 @@ class MainScreen(Screen):
     def __init__(self,**kw):
         super().__init__(**kw)
         self.dm=DataManager()
+        self._refreshing=False
         with self.canvas.before: Color(*BG); self._bg=Rectangle(size=self.size,pos=self.pos)
         self.bind(size=self._r,pos=self._r)
         root=BoxLayout(orientation='vertical',padding=dp(16),spacing=dp(10))
@@ -239,8 +240,8 @@ class MainScreen(Screen):
         # === Feature Cards ===
         cards=BoxLayout(orientation='vertical',spacing=dp(10),size_hint=(1,.50))
         cards.add_widget(CardBtn("刷新数据","联网抓取最新开奖结果",BLUE,on_press=self._refresh))
-        cards.add_widget(CardBtn("历史开奖","查看最近 10 期开奖号码",GRN,on_press=lambda x:self._nav('history')))
-        cards.add_widget(CardBtn("AI 预测","MCMC 采样 · 综合评分 · 权重热力图",RED,on_press=lambda x:self._nav('predict')))
+        cards.add_widget(CardBtn("历史开奖","查看最近 10 期开奖号码",GRN,on_press=lambda *a:self._nav('history')))
+        cards.add_widget(CardBtn("AI 预测","MCMC 采样 · 综合评分 · 权重热力图",RED,on_press=lambda *a:self._nav('predict')))
         root.add_widget(cards)
 
         # === Progress ===
@@ -264,15 +265,24 @@ class MainScreen(Screen):
             self._info.text="数据未找到"; self._dot.text="○"; self._tag.text=""
 
     def _refresh(self,*a):
-        if self._tag.text=="联网中…": return  # prevent double-click
+        if self._refreshing: return  # prevent double-click
+        self._refreshing=True
         self._tag.text="联网中…"; self._dot.text="◌"
         self._prog.opacity=1; self._prog.value=0
+        # timeout fallback: unlock after 30s in case thread hangs
+        Clock.schedule_once(lambda dt: self._refresh_timeout(), 30)
         def run():
             ok=self.dm.refresh()
             Clock.schedule_once(lambda dt:self._done(ok),0)
         threading.Thread(target=run,daemon=True).start()
 
+    def _refresh_timeout(self):
+        if self._refreshing:
+            self._refreshing=False
+            self._tag.text="超时"; self._dot.text="✕"
+
     def _done(self,ok):
+        self._refreshing=False
         try:
             self._prog.opacity=0
             if ok: self._tag.text="已更新"; self._dot.text="●"
@@ -282,9 +292,13 @@ class MainScreen(Screen):
             self._info.text=f"出错:{str(e)[:30]}"; self._dot.text="✕"
 
     def _nav(self,name):
-        if name=='history': self.manager.get_screen('history').load(self.dm)
-        elif name=='predict': self.manager.get_screen('predict').start(self.dm)
-        self.manager.current=name
+        try:
+            if name=='history': self.manager.get_screen('history').load(self.dm)
+            elif name=='predict': self.manager.get_screen('predict').start(self.dm)
+            self.manager.current=name
+        except Exception as e:
+            self._tag.text=f"导航失败:{str(e)[:16]}"
+            self._dot.text="✕"
 
     def _r(self,*a): self._bg.size=self.size; self._bg.pos=self.pos
     def _rh(self,i,*a):
