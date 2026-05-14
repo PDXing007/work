@@ -5,7 +5,7 @@
 - 自动检测最新期号，仅抓取缺失的数据
 - 按开奖日 (周日/周二/周四) 智能调度
 - 支持命令行和定时任务两种模式
-- 更新 ssq_全历史.json
+- 更新 ssq_history.json
 
 用法:
   python fetcher.py              # 检查并抓取最新数据
@@ -40,7 +40,7 @@ PROXIES = {
 
 # 数据文件路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_PATH = os.path.join(BASE_DIR, "ssq_全历史.json")
+DATA_PATH = os.path.join(BASE_DIR, "ssq_history.json")
 BACKUP_DIR = os.path.join(BASE_DIR, "data_backups")
 
 # 双色球开奖日: Python weekday Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
@@ -76,7 +76,7 @@ def save_data(data: List[Dict], path: str = None):
     if os.path.exists(path):
         os.makedirs(BACKUP_DIR, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = os.path.join(BACKUP_DIR, f"ssq_全历史_{timestamp}.json")
+        backup_path = os.path.join(BACKUP_DIR, f"ssq_history_{timestamp}.json")
         try:
             with open(path, "r", encoding="utf-8") as src:
                 with open(backup_path, "w", encoding="utf-8") as dst:

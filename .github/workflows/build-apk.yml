@@ -94,8 +94,8 @@ jobs:
         working-directory: ssq_predictor
         run: |
           # Ensure data file is in the app directory for APK bundling
-          cp ../ssq_全历史.json ./ssq_全历史.json 2>/dev/null || true
-          echo "Data file: $(ls -la ssq_全历史.json 2>/dev/null || echo 'NOT FOUND')"
+          cp ../ssq_history.json ./ssq_history.json 2>/dev/null || true
+          echo "Data file: $(ls -la ssq_history.json 2>/dev/null || echo 'NOT FOUND')"
           # Download Chinese font — place in fonts/ dir for resource_add_path
           echo "Downloading CJK font..."
           mkdir -p fonts

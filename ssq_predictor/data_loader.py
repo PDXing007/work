@@ -2,7 +2,7 @@
 """
 统一数据加载 + 时间序列CV切分工厂
 
-数据文件: ../ssq_全历史.json
+数据文件: ../ssq_history.json
 字段: 期号, 开奖日期, 星期, 红球, 蓝球, 红球顺序, 销售额, 奖池金额
 
 设计原则:
@@ -17,23 +17,23 @@ from typing import List, Dict, Tuple, Optional
 
 
 def _find_data_file():
-    """Find ssq_全历史.json across different platforms"""
+    """Find ssq_history.json across different platforms"""
     # Try current dir first (works on Android and when running from project root)
-    if os.path.exists("ssq_全历史.json"):
-        return "ssq_全历史.json"
+    if os.path.exists("ssq_history.json"):
+        return "ssq_history.json"
     # Try relative to this source file
     here = os.path.dirname(os.path.abspath(__file__))
     for rel in (".", "..", "../.."):
-        path = os.path.join(here, rel, "ssq_全历史.json")
+        path = os.path.join(here, rel, "ssq_history.json")
         if os.path.exists(path):
             return path
     # Try getcwd variants
     for sub in (".", "app", "files", "files/app"):
-        path = os.path.join(os.getcwd(), sub, "ssq_全历史.json")
+        path = os.path.join(os.getcwd(), sub, "ssq_history.json")
         if os.path.exists(path):
             return path
     # Default (will raise FileNotFoundError if missing)
-    return os.path.join(os.getcwd(), "ssq_全历史.json")
+    return os.path.join(os.getcwd(), "ssq_history.json")
 
 
 DATA_PATH = _find_data_file()
